@@ -9,6 +9,14 @@
   "author": "Minh Le",
   "license": "ISC",
   "devDependencies": {
-    "gulp": "^3.9.1"
+    "autoprefixer": "^6.7.6",
+    "bootstrap": "^3.3.7",
+    "bootstrap-sass": "^3.3.7",
+    "browser-sync": "^2.18.8",
+    "gulp": "^3.9.1",
+    "gulp-sass": "^3.1.0",
+    "gulp-uglify": "^2.0.1",
+    "gulp-useref": "^3.1.2",
+    "run-sequence": "^1.2.2"
   }
 }
