@@ -7,14 +7,27 @@ var gulp         = require('gulp'),
     uglify       = require('gulp-uglify'),
     notify       = require('gulp-notify'),
     sourcemaps   = require('gulp-sourcemaps'),
-    prefix       = require('gulp-autoprefixer');
+    prefix       = require('gulp-autoprefixer'),
+    useref       = require('gulp-useref'),
+    gulpIf       = require('gulp-if'),
+    cond         = require('gulp-cond');
 
 var browserSync = require('browser-sync').create();
 var runSequence = require('run-sequence');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var del = require('del');
+var argv = require('yargs');
 
 //-------------------------------------------------------------------------
+
+// If gulp was called in the terminal with the --prod flag, set the node environment to production
+if (argv.prod) {
+    process.env.NODE_ENV = 'production';
+    console.log('In production mode');
+}
+var PROD = process.env.NODE_ENV === 'production';
 
 var dest_js  = 'dist/js';
 var dest_css = 'dist/css';
@@ -35,12 +48,12 @@ gulp.task('sass', function() {
         }))
         .pipe(sass())
         .pipe(prefix('last 2 versions'))
-        .pipe(concat('app.min.css'))
-        .pipe(gulp.dest(dest_css))
-        .pipe(sourcemaps.init())
-        .pipe(sourcemaps.write())
-        .pipe(minify_css())
-        .pipe(gulp.dest(dest_css))
+        .pipe(gulpIf(PROD, concat('style.css')))
+        .pipe(gulpIf(PROD, gulp.dest(dest_css)))
+        .pipe(gulpIf(PROD, sourcemaps.init()))
+        .pipe(gulpIf(PROD, sourcemaps.write()))
+        .pipe(gulpIf(PROD, minify_css()))
+        .pipe(gulpIf(PROD, gulp.dest(dest_css), gulp.dest('app/css')))
         .pipe(browserSync.reload({
             stream: true
         })); //destination
@@ -71,8 +84,12 @@ gulp.task('browserify', function() {
         .bundle()
         //Pass desired output filename to vinyl-source-stream
         .pipe(source('bundle.js'))
+        .pipe(buffer())
+        .pipe(cond(!PROD, sourcemaps.init({loadMaps: true})))
+        .pipe(cond(!PROD, sourcemaps.write()))
         // Start piping stream to tasks!
-        .pipe(gulp.dest('./dist'));
+        .pipe(gulp.dest('./app/js'))
+        ;
 });
 
 // Gulp watch syntax
@@ -85,19 +102,23 @@ gulp.task('watch', ['browserSync', 'sass'], function() {
 
 gulp.task('browserSync', function() {
     browserSync.init({
-        server: './dist'
+        server: PROD ? './dist' : './app'
 
     })
 });
 
-// gulp.task('useref', function() {
-//     return gulp.src('app/*.html')
-//         .pipe(useref())
-//         //minify js file
-//         .pipe(gulpIf('*.js', uglify()))
-//         .pipe(gulp.dest('dist'));
-// })
+gulp.task('useref', function() {
+    return gulp.src('app/*.html')
+        .pipe(useref())
+        //minify js file
+        .pipe(gulpIf('*.js', uglify()))
+        .pipe(gulp.dest('dist'));
+})
+
+gulp.task('clean', function() {
+    return del(['dist/**/*']);
+});
 
 gulp.task('build', function() {
-    runSequence(['sass', 'browserify','browserSync', 'watch'])
+    runSequence([ 'sass', 'browserify','browserSync', 'watch'])
 })
