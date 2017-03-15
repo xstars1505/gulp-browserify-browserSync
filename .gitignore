@@ -3,6 +3,9 @@
 .idea/*.*
 
 dist/
+css/
+
+app/js/bundle.js
 
 node_modules/
 
