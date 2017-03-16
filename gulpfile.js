@@ -124,5 +124,5 @@ gulp.task('clean', function() {
 });
 
 gulp.task('build', function() {
-    runSequence([ 'sass', 'browserify','useref', 'browserSync', 'watch'])
+    runSequence('browserify',['sass','useref', 'browserSync', 'watch'])
 });
