@@ -102,7 +102,7 @@ function bundle() {
 gulp.task('watch', ['browserSync', 'sass'], function() {
     gulp.watch(src_sass, ['sass']);
     gulp.watch('app/*.html', browserSync.reload); 
-    gulp.watch(src_js, browserSync.reload);
+    gulp.watch(src_js, ['browserify', browserSync.reload]);
 });
 
 gulp.task('browserSync', function() {
@@ -123,6 +123,8 @@ gulp.task('clean', function() {
     return del(['dist/**/*']);
 });
 
-gulp.task('build', function() {
+//gulp --> dev environment
+//gulp --prod --> production environment
+gulp.task('default', function() {
     runSequence('browserify',['sass','useref', 'browserSync', 'watch'])
 });

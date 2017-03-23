@@ -1,5 +1,5 @@
-var parse = require('../../node_modules/xlso/index.js');
+var parse = require('xlso');
 var $ = require('jquery');
 console.log(parse)
 console.log($)
-console.log('bbbb')
+console.log('bb')
